@@ -11,6 +11,7 @@ dependencies:
   - stage: orangepi-5-max
   - stage: orangepi-5-plus
   - stage: orangepi-r1-plus-lts
+  - stage: radxa-cm3-io
   - stage: radxa-zero-3e
   - stage: rock64
   - stage: rockpro64
@@ -105,6 +106,10 @@ dependencies:
     platform: linux/arm64
     from: /dtb/rockchip/rk3328-orangepi-r1-plus-lts.dtb
     to: /rootfs/artifacts/arm64/dtb/rockchip/rk3328-orangepi-r1-plus-lts.dtb
+  - image: "{{ .BUILD_ARG_PKGS_PREFIX }}/kernel:{{ .BUILD_ARG_PKGS }}"
+    platform: linux/arm64
+    from: /dtb/rockchip/rk3566-radxa-cm3-io.dtb
+    to: /rootfs/artifacts/arm64/dtb/rockchip/rk3566-radxa-cm3-io.dtb
   - image: "{{ .BUILD_ARG_PKGS_PREFIX }}/kernel:{{ .BUILD_ARG_PKGS }}"
     platform: linux/arm64
     from: /dtb/rockchip/rk3566-radxa-zero-3e.dtb

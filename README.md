@@ -15,6 +15,7 @@ This repo provides the overlay for RockChip based Talos image.
 | orangepi-5-max          | Orange Pi 5 Max         | RK3588  | Overlay for Orange Pi 5 Max                    |
 | orangepi-5-plus         | Orange Pi 5 Plus        | RK3588  | Overlay for Orange Pi 5 Plus                   |
 | orangepi-r1-plus-lts    | Orange Pi R1 Plus LTS   | RK3328  | Overlay for Orange Pi R1 Plus LTS              |
+| radxa-cm3-io           | Radxa CM3 IO Board      | RK3566  | Overlay for Radxa CM3 w/ CM3 IO Board (no U-Boot) |
 | radxa-zero-3e           | Radxa ZERO 3E           | RK3566  | Overlay for Radxa ZERO 3E                      |
 | rock3b                  | Radxa ROCK 3B           | RK3568  | Overlay for Radxa ROCK 3B                      |
 | rock4cplus              | Radxa ROCK 4C+          | RK3399  | Overlay for Radxa ROCK 4C+                     |
