@@ -6,6 +6,7 @@ package main
 
 import (
 	_ "embed"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,7 +23,7 @@ const (
 )
 
 func main() {
-	adapter.Execute(&rock5bPlus{})
+	adapter.Execute(context.Background(), &rock5bPlus{})
 }
 
 type rock5bPlus struct{}
@@ -31,7 +32,7 @@ type rock5bPlusExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *rock5bPlus) GetOptions(extra rock5bPlusExtraOptions) (overlay.Options, error) {
+func (i *rock5bPlus) GetOptions(ctx context.Context, extra rock5bPlusExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"cma=128MB",
 		"console=tty0",
@@ -49,7 +50,7 @@ func (i *rock5bPlus) GetOptions(extra rock5bPlusExtraOptions) (overlay.Options, 
 	}, nil
 }
 
-func (i *rock5bPlus) Install(options overlay.InstallOptions[rock5bPlusExtraOptions]) error {
+func (i *rock5bPlus) Install(ctx context.Context, options overlay.InstallOptions[rock5bPlusExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/rock5b-plus/u-boot-rockchip.bin")
 

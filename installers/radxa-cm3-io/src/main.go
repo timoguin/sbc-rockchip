@@ -6,6 +6,7 @@ package main
 
 import (
 	_ "embed"
+	"context"
 	"os"
 	"path/filepath"
 
@@ -19,14 +20,14 @@ const (
 )
 
 func main() {
-	adapter.Execute(&radxaCM3Io{})
+	adapter.Execute(context.Background(), &radxaCM3Io{})
 }
 
 type radxaCM3Io struct{}
 
 type radxaCM3IoExtraOptions struct{}
 
-func (i *radxaCM3Io) GetOptions(extra radxaCM3IoExtraOptions) (overlay.Options, error) {
+func (i *radxaCM3Io) GetOptions(ctx context.Context, extra radxaCM3IoExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"cma=128MB",
 		"console=tty0",
@@ -43,7 +44,7 @@ func (i *radxaCM3Io) GetOptions(extra radxaCM3IoExtraOptions) (overlay.Options, 
 	}, nil
 }
 
-func (i *radxaCM3Io) Install(options overlay.InstallOptions[radxaCM3IoExtraOptions]) error {
+func (i *radxaCM3Io) Install(ctx context.Context, options overlay.InstallOptions[radxaCM3IoExtraOptions]) error {
 	src := filepath.Join(options.ArtifactsPath, "arm64/dtb", dtb)
 	dst := filepath.Join(options.MountPrefix, "boot/EFI/dtb", dtb)
 

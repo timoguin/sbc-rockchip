@@ -1,12 +1,10 @@
 module radxa-cm3-io
 
-go 1.23
+go 1.25.4
 
 require (
 	github.com/siderolabs/go-copy v0.1.0
-	github.com/siderolabs/talos/pkg/machinery v1.11.5
+	github.com/siderolabs/talos/pkg/machinery v1.12.6
 )
 
-require (
-	golang.org/x/sys v0.38.0 // indirect
-)
+require go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
