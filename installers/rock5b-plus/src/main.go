@@ -57,6 +57,11 @@ func (i *rock5bPlus) Install(ctx context.Context, options overlay.InstallOptions
 		if err := uBootLoaderInstall(uBootBin, options.InstallDisk); err != nil {
 			return err
 		}
+		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/rock5b-plus/u-boot-rockchip.bin")
+
+		if err := uBootLoaderInstall(uBootBin, options.InstallDisk); err != nil {
+			return err
+		}
 	}
 
 	src := filepath.Join(options.ArtifactsPath, "arm64/dtb", dtb)

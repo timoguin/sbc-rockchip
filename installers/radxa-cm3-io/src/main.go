@@ -7,12 +7,14 @@ package main
 import (
 	_ "embed"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
 	"github.com/siderolabs/talos/pkg/machinery/overlay"
 	"github.com/siderolabs/talos/pkg/machinery/overlay/adapter"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -45,6 +47,12 @@ func (i *radxaCM3Io) GetOptions(ctx context.Context, extra radxaCM3IoExtraOption
 }
 
 func (i *radxaCM3Io) Install(ctx context.Context, options overlay.InstallOptions[radxaCM3IoExtraOptions]) error {
+	uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/radxa-cm3-io/u-boot-rockchip.bin")
+
+	if err := uBootLoaderInstall(uBootBin, options.InstallDisk); err != nil {
+		return err
+	}
+
 	src := filepath.Join(options.ArtifactsPath, "arm64/dtb", dtb)
 	dst := filepath.Join(options.MountPrefix, "boot/EFI/dtb", dtb)
 
@@ -61,4 +69,27 @@ func copyFileAndCreateDir(src, dst string) error {
 	}
 
 	return copy.File(src, dst)
+}
+
+func uBootLoaderInstall(uBootBin, installDisk string) error {
+	f, err := os.OpenFile(installDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %w", installDisk, err)
+	}
+
+	defer f.Close() //nolint:errcheck
+
+	uboot, err := os.ReadFile(uBootBin)
+	if err != nil {
+		return err
+	}
+
+	if _, err = f.WriteAt(uboot, off); err != nil {
+		return err
+	}
+
+	// NB: In the case that the block device is a loopback device, we sync here
+	// to ensure that the file is written before the loopback device is
+	// unmounted.
+	return f.Sync()
 }
