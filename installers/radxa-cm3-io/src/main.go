@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	dtb = "rockchip/rk3566-radxa-cm3-io.dtb"
+	off int64 = 512 * 64
+	dtb       = "rockchip/rk3566-radxa-cm3-io.dtb"
 )
 
 func main() {
