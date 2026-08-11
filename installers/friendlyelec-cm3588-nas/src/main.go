@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,14 +24,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&friendlyelecCM3588Nas{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &friendlyelecCM3588Nas{})
 }
 
 type friendlyelecCM3588Nas struct{}
 
-type friendlyelecCM3588NasExtraOptions struct {}
+type friendlyelecCM3588NasExtraOptions struct{}
 
-func (i *friendlyelecCM3588Nas) GetOptions(extra friendlyelecCM3588NasExtraOptions) (overlay.Options, error) {
+func (i *friendlyelecCM3588Nas) GetOptions(_ context.Context, extra friendlyelecCM3588NasExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"cma=128MB",
 		"console=tty0",
@@ -47,7 +52,7 @@ func (i *friendlyelecCM3588Nas) GetOptions(extra friendlyelecCM3588NasExtraOptio
 	}, nil
 }
 
-func (i *friendlyelecCM3588Nas) Install(options overlay.InstallOptions[friendlyelecCM3588NasExtraOptions]) error {
+func (i *friendlyelecCM3588Nas) Install(_ context.Context, options overlay.InstallOptions[friendlyelecCM3588NasExtraOptions]) error {
 	uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/friendlyelec-cm3588-nas/u-boot-rockchip.bin")
 
 	if err := uBootLoaderInstall(uBootBin, options.InstallDisk); err != nil {

@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -23,14 +25,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&helios64{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &helios64{})
 }
 
 type helios64 struct{}
 
 type helios64ExtraOptions struct{}
 
-func (i *helios64) GetOptions(extra helios64ExtraOptions) (overlay.Options, error) {
+func (i *helios64) GetOptions(_ context.Context, extra helios64ExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: board,
 		KernelArgs: []string{
@@ -46,7 +51,7 @@ func (i *helios64) GetOptions(extra helios64ExtraOptions) (overlay.Options, erro
 	}, nil
 }
 
-func (i *helios64) Install(options overlay.InstallOptions[helios64ExtraOptions]) error {
+func (i *helios64) Install(_ context.Context, options overlay.InstallOptions[helios64ExtraOptions]) error {
 	f, err := os.OpenFile(options.InstallDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", options.InstallDisk, err)

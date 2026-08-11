@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,7 +24,10 @@ const (
 )
 
 func main() {
-	adapter.Execute(&turingRK1Installer{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &turingRK1Installer{})
 }
 
 type turingRK1Installer struct{}
@@ -31,7 +36,7 @@ type turingRK1ExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *turingRK1Installer) GetOptions(extra turingRK1ExtraOptions) (overlay.Options, error) {
+func (i *turingRK1Installer) GetOptions(_ context.Context, extra turingRK1ExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"cma=128MB",
 		"console=tty0",
@@ -50,7 +55,7 @@ func (i *turingRK1Installer) GetOptions(extra turingRK1ExtraOptions) (overlay.Op
 	}, nil
 }
 
-func (i *turingRK1Installer) Install(options overlay.InstallOptions[turingRK1ExtraOptions]) error {
+func (i *turingRK1Installer) Install(_ context.Context, options overlay.InstallOptions[turingRK1ExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/turingrk1/u-boot-rockchip.bin")
 

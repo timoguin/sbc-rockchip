@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,7 +24,10 @@ const (
 )
 
 func main() {
-	adapter.Execute(&rock5bPlus{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &rock5bPlus{})
 }
 
 type rock5bPlus struct{}
@@ -31,7 +36,7 @@ type rock5bPlusExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *rock5bPlus) GetOptions(extra rock5bPlusExtraOptions) (overlay.Options, error) {
+func (i *rock5bPlus) GetOptions(_ context.Context, extra rock5bPlusExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"cma=128MB",
 		"console=tty0",
@@ -49,7 +54,7 @@ func (i *rock5bPlus) GetOptions(extra rock5bPlusExtraOptions) (overlay.Options, 
 	}, nil
 }
 
-func (i *rock5bPlus) Install(options overlay.InstallOptions[rock5bPlusExtraOptions]) error {
+func (i *rock5bPlus) Install(_ context.Context, options overlay.InstallOptions[rock5bPlusExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/rock5b-plus/u-boot-rockchip.bin")
 

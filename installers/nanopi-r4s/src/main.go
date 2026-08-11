@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -23,14 +25,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&nanopir4s{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &nanopir4s{})
 }
 
 type nanopir4s struct{}
 
 type nanopir4sExtraOptions struct{}
 
-func (i *nanopir4s) GetOptions(extra nanopir4sExtraOptions) (overlay.Options, error) {
+func (i *nanopir4s) GetOptions(_ context.Context, extra nanopir4sExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: board,
 		KernelArgs: []string{
@@ -45,7 +50,7 @@ func (i *nanopir4s) GetOptions(extra nanopir4sExtraOptions) (overlay.Options, er
 	}, nil
 }
 
-func (i *nanopir4s) Install(options overlay.InstallOptions[nanopir4sExtraOptions]) error {
+func (i *nanopir4s) Install(_ context.Context, options overlay.InstallOptions[nanopir4sExtraOptions]) error {
 	f, err := os.OpenFile(options.InstallDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", options.InstallDisk, err)

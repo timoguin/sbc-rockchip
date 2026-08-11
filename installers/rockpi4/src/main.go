@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -25,14 +27,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&rockPi4{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &rockPi4{})
 }
 
 type rockPi4 struct{}
 
 type rockPi4ExtraOptions struct{}
 
-func (i *rockPi4) GetOptions(extra rockPi4ExtraOptions) (overlay.Options, error) {
+func (i *rockPi4) GetOptions(_ context.Context, extra rockPi4ExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: board,
 		KernelArgs: []string{
@@ -47,7 +52,7 @@ func (i *rockPi4) GetOptions(extra rockPi4ExtraOptions) (overlay.Options, error)
 	}, nil
 }
 
-func (i *rockPi4) Install(options overlay.InstallOptions[rockPi4ExtraOptions]) error {
+func (i *rockPi4) Install(_ context.Context, options overlay.InstallOptions[rockPi4ExtraOptions]) error {
 	f, err := os.OpenFile(options.InstallDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", options.InstallDisk, err)

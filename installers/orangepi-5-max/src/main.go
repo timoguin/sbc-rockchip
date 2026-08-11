@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,7 +24,10 @@ const (
 )
 
 func main() {
-	adapter.Execute(&opi5MaxInstaller{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &opi5MaxInstaller{})
 }
 
 type opi5MaxInstaller struct{}
@@ -31,7 +36,7 @@ type opi5MaxExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *opi5MaxInstaller) GetOptions(extra opi5MaxExtraOptions) (overlay.Options, error) {
+func (i *opi5MaxInstaller) GetOptions(_ context.Context, extra opi5MaxExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"console=tty1",
 		"console=ttyS2,1500000",
@@ -47,7 +52,7 @@ func (i *opi5MaxInstaller) GetOptions(extra opi5MaxExtraOptions) (overlay.Option
 	}, nil
 }
 
-func (i *opi5MaxInstaller) Install(options overlay.InstallOptions[opi5MaxExtraOptions]) error {
+func (i *opi5MaxInstaller) Install(_ context.Context, options overlay.InstallOptions[opi5MaxExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/orangepi-5-max/u-boot-rockchip.bin")
 

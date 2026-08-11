@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -23,7 +25,10 @@ const (
 )
 
 func main() {
-	adapter.Execute(&rock5t{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &rock5t{})
 }
 
 type rock5t struct{}
@@ -32,7 +37,7 @@ type rock5tExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *rock5t) GetOptions(extra rock5tExtraOptions) (overlay.Options, error) {
+func (i *rock5t) GetOptions(_ context.Context, extra rock5tExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: board,
 		KernelArgs: []string{
@@ -49,7 +54,7 @@ func (i *rock5t) GetOptions(extra rock5tExtraOptions) (overlay.Options, error) {
 	}, nil
 }
 
-func (i *rock5t) Install(options overlay.InstallOptions[rock5tExtraOptions]) error {
+func (i *rock5t) Install(_ context.Context, options overlay.InstallOptions[rock5tExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot", board, "u-boot-rockchip.bin")
 

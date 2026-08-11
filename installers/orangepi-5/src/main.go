@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,7 +24,10 @@ const (
 )
 
 func main() {
-	adapter.Execute(&opi5Installer{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &opi5Installer{})
 }
 
 type opi5Installer struct{}
@@ -31,7 +36,7 @@ type opi5ExtraOptions struct {
 	SPIBoot bool `yaml:"spi_boot,omitempty"`
 }
 
-func (i *opi5Installer) GetOptions(extra opi5ExtraOptions) (overlay.Options, error) {
+func (i *opi5Installer) GetOptions(_ context.Context, extra opi5ExtraOptions) (overlay.Options, error) {
 	kernelArgs := []string{
 		"console=tty0",
 		"console=ttyS2,115200",
@@ -47,7 +52,7 @@ func (i *opi5Installer) GetOptions(extra opi5ExtraOptions) (overlay.Options, err
 	}, nil
 }
 
-func (i *opi5Installer) Install(options overlay.InstallOptions[opi5ExtraOptions]) error {
+func (i *opi5Installer) Install(_ context.Context, options overlay.InstallOptions[opi5ExtraOptions]) error {
 	if !options.ExtraOptions.SPIBoot {
 		uBootBin := filepath.Join(options.ArtifactsPath, "arm64/u-boot/orangepi-5/u-boot-rockchip.bin")
 

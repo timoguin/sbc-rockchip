@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,14 +24,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&rock3b{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &rock3b{})
 }
 
 type rock3b struct{}
 
 type rock3bExtraOptions struct{}
 
-func (i *rock3b) GetOptions(extra rock3bExtraOptions) (overlay.Options, error) {
+func (i *rock3b) GetOptions(_ context.Context, extra rock3bExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: "rock3b",
 		KernelArgs: []string{
@@ -44,7 +49,7 @@ func (i *rock3b) GetOptions(extra rock3bExtraOptions) (overlay.Options, error) {
 	}, nil
 }
 
-func (i *rock3b) Install(options overlay.InstallOptions[rock3bExtraOptions]) error {
+func (i *rock3b) Install(_ context.Context, options overlay.InstallOptions[rock3bExtraOptions]) error {
 	var f *os.File
 
 	f, err := os.OpenFile(options.InstallDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)

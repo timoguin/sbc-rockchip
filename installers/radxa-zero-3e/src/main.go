@@ -5,9 +5,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/siderolabs/go-copy/copy"
@@ -22,14 +24,17 @@ const (
 )
 
 func main() {
-	adapter.Execute(&radxaZero3e{})
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	adapter.Execute(ctx, &radxaZero3e{})
 }
 
 type radxaZero3e struct{}
 
 type radxaZero3eExtraOptions struct{}
 
-func (i *radxaZero3e) GetOptions(extra radxaZero3eExtraOptions) (overlay.Options, error) {
+func (i *radxaZero3e) GetOptions(_ context.Context, extra radxaZero3eExtraOptions) (overlay.Options, error) {
 	return overlay.Options{
 		Name: "radxa-zero-3e",
 		KernelArgs: []string{
@@ -44,7 +49,7 @@ func (i *radxaZero3e) GetOptions(extra radxaZero3eExtraOptions) (overlay.Options
 	}, nil
 }
 
-func (i *radxaZero3e) Install(options overlay.InstallOptions[radxaZero3eExtraOptions]) error {
+func (i *radxaZero3e) Install(_ context.Context, options overlay.InstallOptions[radxaZero3eExtraOptions]) error {
 	f, err := os.OpenFile(options.InstallDisk, os.O_RDWR|unix.O_CLOEXEC, 0o666)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", options.InstallDisk, err)

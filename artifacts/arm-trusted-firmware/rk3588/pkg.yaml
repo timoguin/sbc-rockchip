@@ -20,6 +20,10 @@ steps:
         # https://github.com/ARM-software/arm-trusted-firmware/blob/master/docs/getting_started/initial-build.rst
         export CROSS_COMPILE=/bin/aarch64-linux-musl-
 
+        # TF-A appends $(CFLAGS)/$(CPPFLAGS) after its own -Os, so the build environment
+        # defaults (-O2) would win and inflate .pmusram past its 8K limit on rk3399
+        unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+
         make realclean
 
         make -j $(nproc) PLAT=rk3588 DEBUG=0 bl31
